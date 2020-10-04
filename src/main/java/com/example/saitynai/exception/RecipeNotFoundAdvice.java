@@ -1,4 +1,4 @@
-package com.example.saitynai.Recipes;
+package com.example.saitynai.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ControllerAdvice;

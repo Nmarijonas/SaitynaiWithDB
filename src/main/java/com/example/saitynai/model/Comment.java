@@ -1,17 +1,28 @@
-package com.example.saitynai.Comments.model;
+package com.example.saitynai.model;
+
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import net.minidev.json.annotate.JsonIgnore;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.util.Objects;
 
 @Entity
 @Table(name="comments")
-public class Comment {
-    @Id @GeneratedValue private Long id;
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+public class Comment implements Serializable {
+    private static final long serialVersionUID = 1L;
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
     @Column(name = "title")
     private String title;
     @Column(name = "comment")
     private String comment;
-    //private List<Comment> comments;
+    @ManyToOne(fetch = FetchType.LAZY,optional = false)
+    @JoinColumn(name = "recipe_id", nullable = false)
+    @JsonIgnore
+    private Recipe recipe;
 
     public Comment(){}
     public Comment(String title, String comment){
@@ -23,12 +34,15 @@ public class Comment {
     }
     public String getTitle(){return this.title;}
     public String getComment(){return this.comment;}
+    @JsonBackReference(value = "recipe-comment")
+    public Recipe getRecipe(){return this.recipe;}
 
-    public void setIdcomment(Long id) {
+    public void setIdComment(Long id) {
         this.id = id;
     }
     public void setTitle(String title){this.title = title;}
     public void setComment(String comment){this.comment = comment;}
+    public void setRecipe(Recipe recipe){this.recipe=recipe;}
     @Override
     public boolean equals(Object o) {
         if (this == o)
@@ -48,7 +62,7 @@ public class Comment {
 
     @Override
     public String toString() {
-        return "Recipe{" + "" +
+        return "Comment{" + "" +
                 "id=" + this.id + ", "+
                 "title='" + this.title + '\'' + ", "+
                 "comment='" + this.comment + '\'' + '}';

@@ -1,4 +1,4 @@
-package com.example.saitynai.Users;
+package com.example.saitynai.exception;
 
 public class UserNotFoundException extends RuntimeException {
     public UserNotFoundException(Long id) {

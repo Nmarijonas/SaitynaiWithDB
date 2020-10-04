@@ -1,4 +1,4 @@
-package com.example.saitynai.Recipes;
+package com.example.saitynai.exception;
 
 public class RecipeNotFoundException extends RuntimeException {
     public RecipeNotFoundException(Long id) {
