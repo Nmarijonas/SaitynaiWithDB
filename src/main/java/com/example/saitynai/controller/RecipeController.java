@@ -50,6 +50,19 @@ class RecipeController {
         }
     }
 
+    @GetMapping("/users/{usersID}/recipes/{recipesID}")
+    public Recipe getRecipesByUserRecipeID(@PathVariable Long usersID, @PathVariable Long recipesID) {
+        if (!userRepository.existsById(usersID)) {
+            throw new UserNotFoundException(usersID);
+        }
+        Optional<Recipe> optRecipes = recipeRepository.findById(recipesID);
+        if (optRecipes.isPresent() && optRecipes.get().getUser().getIdUsers() == usersID) {
+            return optRecipes.get();
+        } else {
+            throw new RecipeNotFoundException(recipesID);
+        }
+    }
+
     @GetMapping("/recipes/{id}")
     public ResponseEntity<Recipe> getRecipeById(@PathVariable("id") long id) {
         Optional<Recipe> tutorialData = recipeRepository.findById(id);
