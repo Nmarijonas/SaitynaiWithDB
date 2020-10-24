@@ -20,6 +20,9 @@ public class CustomErrorController implements ErrorController {
             if(statusCode == HttpStatus.NOT_FOUND.value()) {
                 return "error-404";
             }
+            else if(statusCode == HttpStatus.UNAUTHORIZED.value()) {
+                return "error-401";
+            }
             /*
             else if(statusCode == HttpStatus.INTERNAL_SERVER_ERROR.value()) {
                 return "error-500";
@@ -30,6 +33,6 @@ public class CustomErrorController implements ErrorController {
 
     @Override
     public String getErrorPath() {
-        return null;
+        return "";
     }
 }

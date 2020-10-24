@@ -1,70 +1,83 @@
 package com.example.saitynai.model;
 
+import com.example.saitynai.model.role.Role;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
-import javax.persistence.*;
-import java.util.Objects;
+import java.util.HashSet;
 import java.util.Set;
+import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
 
 @Entity
-@Table(name="users")
+@Table(name = "users",
+        uniqueConstraints = @UniqueConstraint(columnNames = "username"))
+
 public class User {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idusers;
-    @Column(name = "name")
-    private String name;
-    @Column(name = "password")
+
+    @NotBlank
+    @Size(max = 20)
+    private String username;
+
     private String password;
-    @Column(name = "role_id")
-    private String role;
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL,fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Set<Recipe> recipe;
 
-    public User(){}
-    public User(String name,String password, String role){
-        this.name = name;
-        this.password = password;
-        this.role = role;
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "user_roles",
+    joinColumns = @JoinColumn(name = "user_id"),
+    inverseJoinColumns = @JoinColumn(name = "role_id"))
+    private Set<Role> roles = new HashSet<>();
+
+    public User() {
     }
-    public Long getIdUsers(){
+
+    public User(String username, String password) {
+        this.username = username;
+        this.password = password;
+    }
+
+    public Long getIdUsers() {
         return this.idusers;
     }
-    public String getName(){return this.name;}
-    public String getPassword(){return this.password;}
-    public String getRole(){return this.role;}
-    @JsonManagedReference(value = "recipe-user")
-    public Set<Recipe> getRecipes(){return this.recipe;}
 
+    public String getName() {
+        return this.username;
+    }
+
+    public String getPassword() {
+        return this.password;
+    }
+
+    public Set<Role> getRoles(){
+        return roles;
+    }
+
+    @JsonManagedReference(value = "recipe-user")
+    public Set<Recipe> getRecipes() {
+        return this.recipe;
+    }
 
     public void setIdUsers(Long id) {
         this.idusers = id;
     }
-    public void setName(String name){this.name = name;}
-    public void setPassword(String password) {this.password = password;}
-    public void setRole(String role){this.role = role;}
-    public void setRecipes(Set<Recipe> recipes){this.recipe = recipes;}
-    @Override
-    public boolean equals(Object o) {
-        if (this == o)
-            return true;
-        if (!(o instanceof User))
-            return false;
-        User recipe = (User) o;
-        return Objects.equals(this.idusers, recipe.idusers)
-                && Objects.equals(this.name, recipe.name)
-                && Objects.equals(this.password, recipe.password);
+
+    public void setName(String username) {
+        this.username = username;
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(this.idusers, this.name, this.password);
+    public void setPassword(String password) {
+        this.password = password;
     }
 
-    @Override
-    public String toString() {
-        return "Recipe{" + "" +
-                "id=" + this.idusers + ", "+
-                "name='" + this.name + '\'' + ", "+
-                "password='" + this.password + '\'' + '}';
+    public void setRoles(Set<Role> roles){
+        this.roles = roles;
+    }
+
+    public void setRecipes(Set<Recipe> recipes) {
+        this.recipe = recipes;
     }
 }
