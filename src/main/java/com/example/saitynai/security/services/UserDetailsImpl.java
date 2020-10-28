@@ -32,7 +32,7 @@ public class UserDetailsImpl implements UserDetails {
                 .collect(Collectors.toList());
         return new UserDetailsImpl(
                 user.getIdUsers(),
-                user.getName(),
+                user.getUsername(),
                 user.getPassword(),
                 authorities);
     }

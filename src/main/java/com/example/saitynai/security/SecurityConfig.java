@@ -1,5 +1,6 @@
 package com.example.saitynai.security;
 
+import com.example.saitynai.exception.CustomAccessDeniedHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,10 +22,11 @@ import com.example.saitynai.security.services.UserDetailsServiceImpl;
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(
-        // securedEnabled = true,
-        // jsr250Enabled = true,
         prePostEnabled = true)
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
+    @Autowired
+    CustomAccessDeniedHandler accessDeniedHandler;
+
     @Autowired
     UserDetailsServiceImpl userDetailsService;
 
@@ -59,7 +61,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
                 .authorizeRequests().antMatchers("/api/auth/**").permitAll()
                 .antMatchers("/api/test/**").permitAll()
-                .anyRequest().authenticated();
+                .antMatchers("/api/users/**").permitAll()
+                .antMatchers("/api/recipes/**").permitAll()
+                .anyRequest().authenticated().and()
+                .exceptionHandling().accessDeniedHandler(accessDeniedHandler);
 
         http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
     }

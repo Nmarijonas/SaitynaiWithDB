@@ -17,11 +17,13 @@ public class CustomErrorController implements ErrorController {
         if (status != null) {
             int statusCode = Integer.parseInt(status.toString());
 
-            if(statusCode == HttpStatus.NOT_FOUND.value()) {
+            if (statusCode == HttpStatus.NOT_FOUND.value() ||
+                    statusCode == HttpStatus.INTERNAL_SERVER_ERROR.value()) {
                 return "error-404";
-            }
-            else if(statusCode == HttpStatus.UNAUTHORIZED.value()) {
+            } else if (statusCode == HttpStatus.UNAUTHORIZED.value()) {
                 return "error-401";
+            } else {
+                return "error-404";
             }
             /*
             else if(statusCode == HttpStatus.INTERNAL_SERVER_ERROR.value()) {
@@ -33,6 +35,6 @@ public class CustomErrorController implements ErrorController {
 
     @Override
     public String getErrorPath() {
-        return "";
+        return null;
     }
 }
