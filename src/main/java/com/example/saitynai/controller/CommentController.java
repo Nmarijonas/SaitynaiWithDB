@@ -103,6 +103,7 @@ class CommentController {
         }
     }
 
+    @PreAuthorize("hasRole('USER')")
     @PutMapping("users/{userId}/recipes/{recipeId}/comments/{commentId}")
     public ResponseEntity<Comment> updateComment(@PathVariable("userId") long userId, @PathVariable("recipeId") long recipeId, @PathVariable("commentId") long commentId, @RequestBody Comment newComment) {
         UserDetailsImpl userDetails = ((UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication()
@@ -135,38 +136,33 @@ class CommentController {
         }
     }
 
-    @DeleteMapping("/recipes/{recipeId}/comments/{commentId}")
-    public String deleteComment(@PathVariable Long recipeId, @PathVariable Long commentId) {
-        if (!recipeRepository.existsById(recipeId)) {
-            throw new RecipeNotFoundException(recipeId);
-        }
-        Optional<Comment> optComments = commentRepository.findById(commentId);
-        if (optComments.isPresent() && optComments.get().getRecipe().getIdrecipes() == recipeId) {
-            commentRepository.delete(optComments.get());
-            return "Delete Successfully!";
+
+    @PreAuthorize("hasRole('USER')")
+    @DeleteMapping("users/{userId}/recipes/{recipeId}/comments/{commentId}")
+    public ResponseEntity<HttpStatus> deleteComment(@PathVariable Long userId, @PathVariable Long recipeId, @PathVariable Long commentId) {
+        UserDetailsImpl userDetails = ((UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication()
+                .getPrincipal());
+        long _userId = userDetails.getId();
+        Optional<User> _userData = userRepository.findById(_userId);
+        Optional<User> userData = userRepository.findById(userId);
+        Optional<Recipe> recipeData = recipeRepository.findById(recipeId);
+        Optional<Comment> commentData = commentRepository.findById(commentId);
+
+        if (_userData.isPresent() && userData.isPresent() &&
+                recipeData.isPresent() && commentData.isPresent()
+        ) {
+            if (_userId == commentData.get().getUser().getIdUsers()) {
+                commentRepository.deleteById(commentId);
+                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+            } else {
+                return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+            }
         } else {
-            throw new CommentNotFoundException(commentId);
+            if (!userData.isPresent()) {
+                throw new UserNotFoundException(userId);
+            } else {
+                throw new RecipeNotFoundException(recipeId);
+            }
         }
     }
 }
-
-
-//        return recipeRepository.findById(recipeId)
-//                .map(recipe -> {
-//                    commentRepository.findById(commentId).map(
-//                            comment -> {
-//                                commentRepository.delete(comment);
-//                            }
-//                    )
-//                    recipeRepository.delete(recipe);
-//                    return "Delete Successfully!";
-//                }).orElseThrow(() -> new RecipeNotFoundException(id));
-//    }
-//    public ResponseEntity<HttpStatus> deleteRecipe(@PathVariable("id") long id) {
-//        try {
-//            commentRepository.deleteById(id);
-//            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-//        } catch (Exception e) {
-//            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-//        }
-//    }
