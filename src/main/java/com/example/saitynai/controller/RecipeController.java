@@ -33,7 +33,7 @@ class RecipeController {
     @GetMapping("/recipes")
     public ResponseEntity<List<Recipe>> getAllRecipes() {
         try {
-            List<Recipe> recipes = new ArrayList<Recipe>(recipeRepository.findAll());
+            List<Recipe> recipes = new ArrayList<>(recipeRepository.findAll());
             return new ResponseEntity<>(recipes, HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
