@@ -63,6 +63,16 @@ class RecipeController {
         }
     }
 
+    @PreAuthorize("hasRole('USER')")
+    @GetMapping("/recipes/{recipesID}/user")
+    public Long getUserByRecipeId(@PathVariable Long recipesID){
+        if(!recipeRepository.existsById(recipesID)){
+            throw new UserNotFoundException(recipesID);
+        }
+        Recipe rec = recipeRepository.getOne(recipesID);
+        return rec.getUser().getIdUsers();
+    }
+
     // Access permit to all
     @GetMapping("/users/{usersID}/recipes/{recipesID}")
     public Recipe getRecipesByUserRecipeID(@PathVariable Long usersID, @PathVariable Long recipesID) {
