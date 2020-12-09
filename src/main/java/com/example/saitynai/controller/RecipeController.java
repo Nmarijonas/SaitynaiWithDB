@@ -69,8 +69,13 @@ class RecipeController {
         if(!recipeRepository.existsById(recipesID)){
             throw new UserNotFoundException(recipesID);
         }
-        Recipe rec = recipeRepository.getOne(recipesID);
-        return rec.getUser().getIdUsers();
+        Optional<Recipe> rec = recipeRepository.findById(recipesID);
+        if(rec.isPresent()) {
+            return rec.get().getUser().getIdUsers();
+        }
+        else{
+            throw new RecipeNotFoundException(recipesID);
+        }
     }
 
     // Access permit to all
