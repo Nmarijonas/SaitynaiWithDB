@@ -63,7 +63,6 @@ class RecipeController {
         }
     }
 
-    @PreAuthorize("hasRole('USER')")
     @GetMapping("/recipes/{recipesID}/user")
     public Long getUserByRecipeId(@PathVariable Long recipesID){
         if(!recipeRepository.existsById(recipesID)){

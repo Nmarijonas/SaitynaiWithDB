@@ -45,11 +45,11 @@ class UserController {
     @PreAuthorize("hasRole('USER') || hasRole('ADMIN')")
     @GetMapping("/users/{id}")
     public ResponseEntity<User> getUserById(@PathVariable("id") long id) {
-        UserDetailsImpl userDetails = ((UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication()
-                .getPrincipal());
-        long userId = userDetails.getId();
-        if (userId == id && userRepository.findById(userId).isPresent()) {
-            return new ResponseEntity<>(userRepository.getOne(userId), HttpStatus.OK);
+//        UserDetailsImpl userDetails = ((UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication()
+//                .getPrincipal());
+//        long userId = userDetails.getId();
+        if (userRepository.findById(id).isPresent()) {
+            return new ResponseEntity<>(userRepository.getOne(id), HttpStatus.OK);
         }
         return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
     }
@@ -91,41 +91,47 @@ class UserController {
         return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
     }
 
-    @PreAuthorize("hasRole('USER') || hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/users/{id}")
-    public ResponseEntity<User> updateUser(@PathVariable("id") long id, @RequestBody User user) {
-        UserDetailsImpl userDetails = ((UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication()
-                .getPrincipal());
-        long userId = userDetails.getId();
-        Optional<User> userData = userRepository.findById(userId);
-        if (userId == id && userData.isPresent()) {
+    public ResponseEntity<User> updateUser(@PathVariable("id") long id, @RequestBody SignupRequest user) {
+        Optional<User> userData = userRepository.findById(id);
+        if (userData.isPresent()) {
             User _user = userData.get();
             _user.setUsername(user.getUsername());
             _user.setPassword(encoder.encode(user.getPassword()));
-            Role adminRole = roleRepository.findByName(RoleEnum.ROLE_ADMIN)
-                    .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-            if (_user.getRoles().contains(adminRole)) {
-                _user.setRoles(user.getRoles());
-            } else {
-                Set<Role> roles = new HashSet<>();
+            Set<String> strRoles = user.getRole();
+            Set<Role> roles = new HashSet<>();
+            if (strRoles == null) {
                 Role userRole = roleRepository.findByName(RoleEnum.ROLE_USER)
                         .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
                 roles.add(userRole);
-                _user.setRoles(roles);
+            } else {
+                strRoles.forEach(role -> {
+                    if ("admin".equals(role)) {
+                        Role adminRole = roleRepository.findByName(RoleEnum.ROLE_ADMIN)
+                                .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+                        roles.add(adminRole);
+                    } else {
+                        Role userRole = roleRepository.findByName(RoleEnum.ROLE_USER)
+                                .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+                        roles.add(userRole);
+                    }
+                });
             }
+            _user.setRoles(roles);
             return new ResponseEntity<>(userRepository.save(_user), HttpStatus.OK);
         } else {
             throw new UserNotFoundException(id);
         }
     }
 
-    @PreAuthorize("hasRole('USER') || hasRole('ADMIN')")
+    @PreAuthorize(" hasRole('ADMIN')")
     @DeleteMapping("/users/{id}")
     public ResponseEntity<HttpStatus> deleteRecipe(@PathVariable("id") long id) {
-        UserDetailsImpl userDetails = ((UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication()
-                .getPrincipal());
-        long userId = userDetails.getId();
-        if (userId == id && userRepository.findById(userId).isPresent()) {
+//        UserDetailsImpl userDetails = ((UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication()
+//                .getPrincipal());
+//        long userId = userDetails.getId();
+        if (userRepository.findById(id).isPresent()) {
             userRepository.deleteById(id);
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }

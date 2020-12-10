@@ -41,10 +41,8 @@ class CommentController {
         return commentRepository.findByRecipeIdrecipes(recipeId);
     }
 
-
     @GetMapping("recipes/{recipeId}/comments/{commentId}/owner")
     public Long getCommentOwner(@PathVariable Long recipeId, @PathVariable Long commentId) {
-
         if (recipeRepository.existsById(recipeId) &&
                 commentRepository.findById(commentId).isPresent()) {
             return commentRepository.findById(commentId).get().getUser().getIdUsers();
@@ -118,33 +116,20 @@ class CommentController {
     @PreAuthorize("hasRole('USER')")
     @PutMapping("users/{userId}/recipes/{recipeId}/comments/{commentId}")
     public ResponseEntity<Comment> updateComment(@PathVariable("userId") long userId, @PathVariable("recipeId") long recipeId, @PathVariable("commentId") long commentId, @RequestBody Comment newComment) {
-        UserDetailsImpl userDetails = ((UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication()
-                .getPrincipal());
-        long _userId = userDetails.getId();
-        Optional<User> _userData = userRepository.findById(_userId);
         Optional<User> userData = userRepository.findById(userId);
         Optional<Recipe> recipeData = recipeRepository.findById(recipeId);
         Optional<Comment> commentData = commentRepository.findById(commentId);
 
-        if (_userData.isPresent() && userData.isPresent() &&
-                recipeData.isPresent() && commentData.isPresent()
-        ) {
-            if (_userId == commentData.get().getUser().getIdUsers()) {
-                return commentRepository.findById(commentId)
-                        .map(comment -> {
-                            comment.setTitle(newComment.getTitle());
-                            comment.setComment(newComment.getComment());
-                            return new ResponseEntity<>(commentRepository.save(comment), HttpStatus.OK);
-                        }).orElseThrow(() -> new CommentNotFoundException(commentId));
-            } else {
-                return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
-            }
+        if (userData.isPresent() &&
+                recipeData.isPresent() && commentData.isPresent()) {
+            return commentRepository.findById(commentId)
+                    .map(comment -> {
+                        comment.setTitle(newComment.getTitle());
+                        comment.setComment(newComment.getComment());
+                        return new ResponseEntity<>(commentRepository.save(comment), HttpStatus.OK);
+                    }).orElseThrow(() -> new CommentNotFoundException(commentId));
         } else {
-            if (!userData.isPresent()) {
-                throw new UserNotFoundException(userId);
-            } else {
-                throw new RecipeNotFoundException(recipeId);
-            }
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
     }
 
@@ -152,29 +137,15 @@ class CommentController {
     @PreAuthorize("hasRole('USER')")
     @DeleteMapping("users/{userId}/recipes/{recipeId}/comments/{commentId}")
     public ResponseEntity<HttpStatus> deleteComment(@PathVariable Long userId, @PathVariable Long recipeId, @PathVariable Long commentId) {
-        UserDetailsImpl userDetails = ((UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication()
-                .getPrincipal());
-        long _userId = userDetails.getId();
-        Optional<User> _userData = userRepository.findById(_userId);
         Optional<User> userData = userRepository.findById(userId);
         Optional<Recipe> recipeData = recipeRepository.findById(recipeId);
         Optional<Comment> commentData = commentRepository.findById(commentId);
-
-        if (_userData.isPresent() && userData.isPresent() &&
-                recipeData.isPresent() && commentData.isPresent()
-        ) {
-            if (_userId == commentData.get().getUser().getIdUsers()) {
-                commentRepository.deleteById(commentId);
-                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-            } else {
-                return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
-            }
+        if (userData.isPresent() &&
+                recipeData.isPresent() && commentData.isPresent()) {
+            commentRepository.deleteById(commentId);
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         } else {
-            if (!userData.isPresent()) {
-                throw new UserNotFoundException(userId);
-            } else {
-                throw new RecipeNotFoundException(recipeId);
-            }
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
     }
 }
