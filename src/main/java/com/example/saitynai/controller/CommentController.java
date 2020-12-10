@@ -41,6 +41,18 @@ class CommentController {
         return commentRepository.findByRecipeIdrecipes(recipeId);
     }
 
+
+    @GetMapping("recipes/{recipeId}/comments/{commentId}/owner")
+    public Long getCommentOwner(@PathVariable Long recipeId, @PathVariable Long commentId) {
+
+        if (recipeRepository.existsById(recipeId) &&
+                commentRepository.findById(commentId).isPresent()) {
+            return commentRepository.findById(commentId).get().getUser().getIdUsers();
+        } else {
+            throw new RecipeNotFoundException(recipeId);
+        }
+    }
+
     // Access permit to all
     @GetMapping("/recipes/{recipeId}/comments/{commentId}")
     public Comment getCommentByID(@PathVariable Long recipeId, @PathVariable Long commentId) {
@@ -51,7 +63,7 @@ class CommentController {
             throw new RecipeNotFoundException(recipeId);
         }
         Optional<Comment> optComments = commentRepository.findById(commentId);
-        if (optComments.isPresent() && optComments.get().getRecipe().getIdrecipes() == recipeId) {
+        if (optComments.isPresent() && optComments.get().getRecipe().getIdrecipes().equals(recipeId)) {
             return optComments.get();
         } else {
             throw new CommentNotFoundException(commentId);
